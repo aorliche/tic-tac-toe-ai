@@ -280,3 +280,77 @@ func TestCanPlay(t *testing.T) {
         t.Fail()
     }
 }
+
+func TestClone(t *testing.T) {
+    s := InitState(3, 3, 2, 3)
+    s.Board[0][0] = 1
+    s2 := s.Clone()
+    if s2.Board[0][0] != 1 {
+        t.Errorf("Expected %v, got %v", s.Board, s2.Board)
+    }
+}
+
+func TestGetCandidates(t *testing.T) {
+    s := InitState(3, 3, 2, 3)
+    fns := GetCandidates(s, 0)
+    s2 := fns[0]()
+    nZero := 0
+    nEmpty := 0
+    nOrigEmpty := 0
+    for i := 0; i < 3; i++ {
+        for j := 0; j < 3; j++ {
+            if s2.Board[i][j] == 0 {
+                nZero++
+            } else if s2.Board[i][j] == -1 {
+                nEmpty++
+            }
+            if s.Board[i][j] == -1 {
+                nOrigEmpty++
+            }
+        }
+    }
+    if nZero != 1 && nEmpty != 8 && nOrigEmpty != 9 {
+        t.Fail()
+    }
+    fns2 := GetCandidates(s2, 0)
+    if len(fns2) != 0 {
+        t.Fail()
+    }
+    fns3 := GetCandidates(s2, 1)
+    s3 := fns3[0]()
+    nZero = 0
+    nEmpty = 0
+    nOnes := 0
+    for i := 0; i < 3; i++ {
+        for j := 0; j < 3; j++ {
+            if s3.Board[i][j] == 0 {
+                nZero++
+            } else if s3.Board[i][j] == -1 {
+                nEmpty++
+            } else if s3.Board[i][j] == 1 {
+                nOnes++
+            }
+        }
+    }
+    if nZero != 1 && nEmpty != 7 && nOnes != 1 {
+        t.Fail()
+    }
+}
+
+func TestClosure(t *testing.T) {
+    s := InitState(3, 3, 2, 3)
+    fns := GetCandidates(s, 0)
+    fns[0]()
+    s3 := fns[1]()
+    nZero := 0
+    for i := 0; i < 3; i++ {
+        for j := 0; j < 3; j++ {
+            if s3.Board[i][j] == 0 {
+                nZero++
+            }
+        }
+    }
+    if nZero != 1 {
+        t.Errorf("%v", s3.Board)
+    }
+}

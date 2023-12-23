@@ -21,14 +21,14 @@ func InitState(rows int, cols int, nplay int, winthresh int) *State {
 }
 
 func (state *State) Clone() *State {
-    state = InitState(state.Rows, state.Cols, state.NPlayers, state.WinThresh)
-    state.Turn = state.Turn
-    state.Board = make([][]int, state.Rows)
+    s := InitState(state.Rows, state.Cols, state.NPlayers, state.WinThresh)
+    s.Turn = state.Turn
+    s.Board = make([][]int, state.Rows)
     for i := 0; i < state.Rows; i++ {
-        state.Board[i] = make([]int, state.Cols)
-        copy(state.Board[i], state.Board[i])
+        s.Board[i] = make([]int, state.Cols)
+        copy(s.Board[i], state.Board[i])
     }
-    return state
+    return s
 }
 
 func GetRows(state *State) [][]int {
@@ -125,24 +125,17 @@ func (state *State) GetLineWinner(line []int) int {
     if len(line) < state.WinThresh {
         return -1
     }
-    // For safety, check for max value in line
-    n := 0
+    prev := -1
+    seq := 0
     for i := 0; i < len(line); i++ {
-        if line[i] > n {
-            n = line[i]
-        }
-    }
-    n = n+1
-    arr := make([]int, n)
-    for i := 0; i < len(line); i++ {
-        if line[i] == -1 {
-            continue
-        }
-        arr[line[i]]++
-    }
-    for i := range arr {
-        if arr[i] >= state.WinThresh {
-            return i
+        if line[i] != prev {
+            prev = line[i]
+            seq = 1
+        } else if prev != -1 {
+            seq++
+            if seq == state.WinThresh {
+                return prev
+            }
         }
     }
     return -1
@@ -170,7 +163,17 @@ func Eval(state *State, me int) float64 {
 }
 
 func GameOver(state *State) bool {
-    return GetWinner(state) != -1
+    if GetWinner(state) != -1 {
+        return true
+    }
+    for i := 0; i < state.Rows; i++ {
+        for j := 0; j < state.Cols; j++ {
+            if state.Board[i][j] == -1 {
+                return false
+            }
+        }
+    }
+    return true
 }
 
 func CanPlay(state *State, me int, i int, j int) bool {
