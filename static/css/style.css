@@ -1,0 +1,13 @@
+canvas {
+    border: 1px solid black;
+}
+#container {
+    display: flex;
+}
+#left {
+    margin-right: 20px;
+}
+#right label {
+    display: inline-block;
+    min-width: 100px;
+}

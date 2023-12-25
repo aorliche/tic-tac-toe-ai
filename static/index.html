@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <script type="module" src="/js/main.js"></script>
+    <title>Tic Tac Toe</title>
+</head>
+<body>
+    <h1>Tic Tac Toe</h1>
+    <div id="container">
+        <div id='left'>
+            <canvas width="400" height="300"></canvas>
+        </div>
+        <div id='right'>
+            <label for="rows">Rows: </label>
+            <input type="number" id="rows" value="3" min="1" max="10"><br>
+            <label for="cols">Cols: </label>
+            <input type="number" id="cols" value="3" min="1" max="10"><br>
+            <label for="thresh">Win Threshold: </label>
+            <input type="number" id="thresh" value="3" min="1" max="10"><br>
+            <label for="nplayers">Players: </label>
+            <input type="number" id="nplayers" value="2" min="2" max="10"><br>
+            <input type="checkbox" id="human" name="human" value="human" checked>
+            <label for ="human">Human Player</label><br>
+            <label for="player">Human: </label>
+            <input type="number" id="player" value="1" min="1" max="10"><br>
+            <button id="start">Start</button>   
+        </div>
+    </div>
+</body>
+</html>
