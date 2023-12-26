@@ -1,4 +1,4 @@
-package main
+package ttt
 
 import (
     "testing"
@@ -212,7 +212,7 @@ func TestGetWinner(t *testing.T) {
     s.Board[2][0] = 6
     s.Board[2][1] = 7
     s.Board[2][2] = 8
-    if GetWinner(s) != -1 {
+    if w, _ := GetWinner(s); w != -1 {
         t.Fail()
     }
     s.Board[0][0] = 0
@@ -224,7 +224,7 @@ func TestGetWinner(t *testing.T) {
     s.Board[2][0] = 6
     s.Board[2][1] = 7
     s.Board[2][2] = 8
-    if GetWinner(s) != 0 {
+    if w, _ := GetWinner(s); w != 0 {
         t.Fail()
     }
     s.Board[0][0] = 0
@@ -236,7 +236,7 @@ func TestGetWinner(t *testing.T) {
     s.Board[2][0] = 6
     s.Board[2][1] = 1
     s.Board[2][2] = 8
-    if GetWinner(s) != 1 {
+    if w, _ := GetWinner(s); w != 1 {
         t.Fail()
     }
     s.Board[0][0] = 0
@@ -248,7 +248,7 @@ func TestGetWinner(t *testing.T) {
     s.Board[2][0] = 6
     s.Board[2][1] = 7
     s.Board[2][2] = 0
-    if GetWinner(s) != 0 {
+    if w, _ := GetWinner(s); w != 0 {
         t.Fail()
     }
 }
@@ -352,5 +352,51 @@ func TestClosure(t *testing.T) {
     }
     if nZero != 1 {
         t.Errorf("%v", s3.Board)
+    }
+}
+
+func TestGetLineBonus(t *testing.T) {
+    s := InitState(4, 3, 2, 3)
+    lines := [][]int{
+        []int{0,0,1},
+    }
+    if b := GetLineBonus(s, lines, 0); b > 0 {
+        t.Errorf("%v", b)
+    }
+    lines = [][]int{
+        []int{0,0,-1},
+    }
+    if b := GetLineBonus(s, lines, 0); b == 0 {
+        t.Errorf("%v", b)
+    }
+    lines = [][]int{
+        []int{1,0,0},
+    }
+    if b := GetLineBonus(s, lines, 0); b > 0 {
+        t.Errorf("%v", b)
+    }
+    lines = [][]int{
+        []int{-1,0,0},
+    }
+    if b := GetLineBonus(s, lines, 0); b == 0 {
+        t.Errorf("%v", b)
+    }
+    lines = [][]int{
+        []int{1,0,-1},
+    }
+    if b := GetLineBonus(s, lines, 0); b > 0 {
+        t.Errorf("%v", b)
+    }
+    lines = [][]int{
+        []int{-1,0,1},
+    }
+    if b := GetLineBonus(s, lines, 0); b > 0 {
+        t.Errorf("%v", b)
+    }
+    lines = [][]int{
+        []int{-1,0,-1},
+    }
+    if b := GetLineBonus(s, lines, 0); b > 0 {
+        t.Errorf("%v", b)
     }
 }

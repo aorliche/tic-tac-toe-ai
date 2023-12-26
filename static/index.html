@@ -22,12 +22,19 @@
             <label for="thresh">Win Threshold: </label>
             <input type="number" id="thresh" value="3" min="1" max="10"><br>
             <label for="nplayers">Players: </label>
-            <input type="number" id="nplayers" value="2" min="2" max="10"><br>
+            <input type="number" id="nplayers" value="2" min="2" max="10">
+            <hr>
             <input type="checkbox" id="human" name="human" value="human" checked>
             <label for ="human">Human Player</label><br>
             <label for="player">Human: </label>
             <input type="number" id="player" value="1" min="1" max="10"><br>
             <button id="start">Start</button>   
+            <hr>
+            <label for="depth">Depth: </label>
+            <input type="number" id="depth" value="5" min="1" max="10"><br>
+            <label for="time">Time: </label>
+            <input type="range" id="time" value="1000" min="500" max="10000" step="500">
+            <span id="time-value">1000 ms</span><br>
         </div>
     </div>
 </body>

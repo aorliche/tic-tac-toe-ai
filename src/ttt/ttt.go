@@ -1,4 +1,8 @@
-package main
+package ttt
+
+import (
+    "math"
+)
 
 type State struct {
     Rows int
@@ -141,29 +145,85 @@ func (state *State) GetLineWinner(line []int) int {
     return -1
 }
 
-func GetWinner(state *State) int {
+func GetWinner(state *State) (int, [][]int) {
     lines := GetLines(state)
     for _,line := range lines {
         winner := state.GetLineWinner(line)
         if winner != -1 {
-            return winner
+            return winner, lines
         }
     }
-    return -1
+    return -1, lines
+}
+
+func GetCenterBonus(state *State, me int) float64 {
+    sum := float64(0)
+    r := float64(state.Rows-1)
+    c := float64(state.Cols-1)
+    div := 10*(r+1)*(c+1)
+    ih := r/2
+    jh := c/2
+    for i := 0; i < state.Rows; i++ {
+        for j := 0; j < state.Cols; j++ {
+            if state.Board[i][j] == me {
+                sum += ((ih-math.Abs(float64(i)-ih)) + (jh-math.Abs(float64(j)-jh)))/div
+            }
+        }
+    }
+    return sum
+}
+
+func GetLineBonus(state *State, lines [][]int, me int) float64 {
+    sum := float64(0)
+    for _,line := range lines {
+        if len(line) < state.WinThresh {
+            continue
+        }
+        valid := false
+        n := 0
+        for i := 0; i < len(line); i++ {
+            if line[i] == me {
+                if i != 0 && line[i-1] == -1 {
+                    valid = true
+                }
+                n++
+            } else {
+                if line[i] == -1 {
+                    valid = true
+                }
+                if valid {
+                    if n > 1 {
+                        sum += float64(n)/float64(state.WinThresh)/float64(len(lines))/2
+                    }
+                }
+                valid = false
+                n = 0
+            }
+        }
+        if valid {
+            if n > 1 {
+                sum += float64(n)/float64(state.WinThresh)/float64(len(lines))/2
+            }
+        }
+    }
+    return sum
 }
 
 func Eval(state *State, me int) float64 {
-    winner := GetWinner(state)
+    winner, lines := GetWinner(state)
     if winner == me {
         return 1.0
     } else if winner == -1 {
-        return 0.5
+        cBonus := GetCenterBonus(state, me)
+        lBonus := GetLineBonus(state, lines, me)
+        return 0.5+cBonus+lBonus
     }
     return 0
 }
 
 func GameOver(state *State) bool {
-    if GetWinner(state) != -1 {
+    win, _ := GetWinner(state)
+    if win != -1 {
         return true
     }
     for i := 0; i < state.Rows; i++ {

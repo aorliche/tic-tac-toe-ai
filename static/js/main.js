@@ -33,8 +33,10 @@ class Board {
         const c = Math.floor(x / dx);
         const r = Math.floor(y / dy);
         if (this.board[r][c] == -1) {
-            this.board[r][c] = this.human;
-            this.repaint();
+            //this.board[r][c] = this.human;
+            //this.repaint();
+            const req = JSON.stringify({Key: this.key, Action: "Move", Payload: JSON.stringify([r, c])});
+            this.conn.send(req);
         }
     }
 
@@ -42,7 +44,8 @@ class Board {
         return this.canvas.getContext("2d");
     }
 
-    newGame(rows, cols, thresh, nplayers, human) {
+    newGame(rows, cols, thresh, nplayers, human, depth, time) {
+        this.conn = new WebSocket(`ws://${location.host}/ws`);
         this.nplayers = nplayers;
         this.thresh = thresh;
         this.human = human;
@@ -55,6 +58,17 @@ class Board {
         }
         this.rows = rows;
         this.cols = cols;
+        this.conn.onopen = e => {
+            const game = JSON.stringify({Key: -1, Human: human, State: {Rows: rows, Cols: cols, Board: this.board, NPlayers: nplayers, WinThresh: thresh, Turn: 0}});
+            const req = JSON.stringify({Key: -1, Action: "New", Payload: game, Depth: depth, TimeMillis: time});
+            this.conn.send(req);
+        }
+        this.conn.onmessage = e => {
+            const game = JSON.parse(e.data);
+            this.board = game.State.Board;
+            this.key = game.Key;
+            this.repaint();
+        }
     }
 
     repaint() {
@@ -94,13 +108,15 @@ window.onload = () => {
     });
     $('#start').addEventListener("click", e => {
         e.preventDefault();
-        const rows = $('#rows').value;
-        const cols = $('#cols').value;
-        const thresh = $('#thresh').value;
-        const nplayers = $('#nplayers').value;
+        const rows = parseInt($('#rows').value);
+        const cols = parseInt($('#cols').value);
+        const thresh = parseInt($('#thresh').value);
+        const nplayers = parseInt($('#nplayers').value);
         const player = $('#human').checked ? parseInt($('#player').value)-1 : -1;
-        board.newGame(rows, cols, thresh, nplayers, player);
-        board.repaint();
+        const depth = parseInt($('#depth').value);
+        const time = parseInt($('#time').value);
+        board.newGame(rows, cols, thresh, nplayers, player, depth, time);
+        //board.repaint();
     });
     function updateThresh() {
         const rows = $('#rows').value;
@@ -132,5 +148,8 @@ window.onload = () => {
     });
     $('#player').addEventListener("change", e => {
         updatePlayer();
+    });
+    $('#time').addEventListener("input", e => {
+        $('#time-value').innerText = $('#time').value + " ms";
     });
 }
