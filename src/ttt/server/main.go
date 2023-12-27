@@ -19,6 +19,7 @@ type Game struct {
     State *ttt.State
     sendChans []chan *ttt.State
     recvChan chan *ttt.State
+    over bool
 }
 
 type Request struct {
@@ -51,11 +52,15 @@ func GameLoop(game *Game, conn *websocket.Conn) {
         }
         if ttt.GameOver(game.State) {
             SendGame(game, conn)
+            CloseGame(game)
             break
         }
         game.State = <- game.recvChan
         SendGame(game, conn)
         time.Sleep(500 * time.Millisecond)
+        if game.over {
+            break
+        }
     }
 }
 
@@ -90,7 +95,18 @@ func SendGame(game *Game, conn *websocket.Conn) {
     conn.WriteMessage(websocket.TextMessage, jsn)
 }
 
+func CloseGame(game *Game) {
+    log.Println("game closed")
+    game.over = true
+    for _, chn := range game.sendChans {
+        chn <- nil
+        close(chn)
+    }
+    close(game.recvChan)
+}
+
 func Socket(w http.ResponseWriter, r *http.Request) {
+    var game *Game
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
         log.Println(err)
@@ -101,6 +117,10 @@ func Socket(w http.ResponseWriter, r *http.Request) {
         msgType, msg, err := conn.ReadMessage()
         if err != nil {
             log.Println(err)
+            if game != nil {
+                CloseGame(game)
+                game = nil
+            }
             return  
         }
         // Do we ever get any other types of messages?
@@ -112,7 +132,6 @@ func Socket(w http.ResponseWriter, r *http.Request) {
         json.NewDecoder(bytes.NewBuffer(msg)).Decode(&req)
         switch req.Action {
             case "New":  
-                var game *Game
                 log.Println(req.Payload)
                 err := json.NewDecoder(bytes.NewBuffer([]byte(req.Payload))).Decode(&game)
                 if err != nil {

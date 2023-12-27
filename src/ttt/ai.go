@@ -9,6 +9,10 @@ func Loop(me int, inChan chan *State, outChan chan *State, depth int, timeMillis
     var state *State
     for { 
         state = <- inChan 
+        // nil state indicates player disconnect
+        if state == nil {
+            break
+        }
         if GameOver(state) {
             break
         }
