@@ -64,7 +64,7 @@ func GetDiags(state *State) [][]int {
     m := 0
     // Duplicate the two main diagonals
     // Eliminates some edge cases?
-    n := 2*(state.Rows+state.Cols)
+    n := 2*(state.Rows+state.Cols)-2
     diags := make([][]int, n)
     // Left to right start at bottom row
     for i := 0; i < state.Rows; i++ {
@@ -79,7 +79,7 @@ func GetDiags(state *State) [][]int {
         m++
     }
     // Left to right start at left col
-    for i := 0; i < state.Cols; i++ {
+    for i := 1; i < state.Cols; i++ {
         dsize := state.Cols - i
         if dsize > maxDiag {
             dsize = maxDiag
@@ -102,8 +102,8 @@ func GetDiags(state *State) [][]int {
         }
         m++
     }
-    // Right to left start at left col
-    for i := state.Cols-1; i >= 0; i-- {
+    // Right to left start at right col
+    for i := state.Cols-2; i >= 0; i-- {
         dsize := i+1
         if dsize > maxDiag {
             dsize = maxDiag
@@ -160,49 +160,50 @@ func GetCenterBonus(state *State, me int) float64 {
     sum := float64(0)
     r := float64(state.Rows-1)
     c := float64(state.Cols-1)
-    div := 10*(r+1)*(c+1)
+    mul := 1/((r+1)*(c+1))
     ih := r/2
     jh := c/2
     for i := 0; i < state.Rows; i++ {
         for j := 0; j < state.Cols; j++ {
             if state.Board[i][j] == me {
-                sum += ((ih-math.Abs(float64(i)-ih)) + (jh-math.Abs(float64(j)-jh)))/div
+                sum += ((ih-math.Abs(float64(i)-ih)) + (jh-math.Abs(float64(j)-jh)))*mul
             }
         }
     }
     return sum
 }
 
+// 1. Must have potential for making winthresh in a row
+// 2. Is close to making winthresh in a row
 func GetLineBonus(state *State, lines [][]int, me int) float64 {
     sum := float64(0)
+    // Check how many lines can potentially have a win
+    npot := 0
+    for _,line := range lines {
+        if len(line) >= state.WinThresh {
+            npot++
+        }
+    }
+    mul := 1/float64(state.WinThresh)/float64(npot)/2
     for _,line := range lines {
         if len(line) < state.WinThresh {
             continue
         }
-        valid := false
         n := 0
+        m := 0
         for i := 0; i < len(line); i++ {
-            if line[i] == me {
-                if i != 0 && line[i-1] == -1 {
-                    valid = true
-                }
+            if line[i] == -1 || line[i] == me {
                 n++
-            } else {
-                if line[i] == -1 {
-                    valid = true
+                if line[i] == me {
+                    m++
                 }
-                if valid {
-                    if n > 1 {
-                        sum += float64(n)/float64(state.WinThresh)/float64(len(lines))/2
-                    }
-                }
-                valid = false
-                n = 0
             }
-        }
-        if valid {
-            if n > 1 {
-                sum += float64(n)/float64(state.WinThresh)/float64(len(lines))/2
+            if (line[i] != -1 && line[i] != me) || i == len(line)-1 {
+                if n >= state.WinThresh && m >= 1 {
+                    sum += float64(m)*mul + 0.2*float64(n)*mul
+                }
+                n = 0
+                m = 0
             }
         }
     }
@@ -212,11 +213,11 @@ func GetLineBonus(state *State, lines [][]int, me int) float64 {
 func Eval(state *State, me int) float64 {
     winner, lines := GetWinner(state)
     if winner == me {
-        return 1.0
+        return 10.0
     } else if winner == -1 {
         cBonus := GetCenterBonus(state, me)
         lBonus := GetLineBonus(state, lines, me)
-        return 0.5+cBonus+lBonus
+        return 0.5+lBonus+cBonus
     }
     return 0
 }

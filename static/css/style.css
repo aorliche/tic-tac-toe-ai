@@ -11,3 +11,6 @@ canvas {
     display: inline-block;
     min-width: 100px;
 }
+#footer {
+    text-align: center;
+}

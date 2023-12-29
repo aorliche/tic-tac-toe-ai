@@ -7,10 +7,10 @@ import (
 func TestDiags1x1Hard(t *testing.T) {
     s := InitState(1, 1, 2, 3)
     diags := GetDiags(s)
-    if len(diags) != 4 {
+    if len(diags) != 2 {
         t.Fail()
     }
-    if diags[0][0] != -1 || diags[1][0] != -1 || diags[2][0] != -1 || diags[3][0] != -1 {
+    if diags[0][0] != -1 || diags[1][0] != -1 {
         t.Fail()
     }
 }
@@ -18,20 +18,20 @@ func TestDiags1x1Hard(t *testing.T) {
 func TestDiags3x3(t *testing.T) {
     s := InitState(3, 3, 2, 3)
     diags := GetDiags(s)
-    if len(diags) != 12 {
+    if len(diags) != 10 {
         t.Fail()
     }
     expect := [][]int{
         []int{-1},
         []int{-1, -1},
         []int{-1, -1, -1},
-        []int{-1, -1, -1},
+        //[]int{-1, -1, -1},
         []int{-1, -1},
         []int{-1},
         []int{-1},
         []int{-1, -1},
         []int{-1, -1, -1},
-        []int{-1, -1, -1},
+        //[]int{-1, -1, -1},
         []int{-1, -1},
         []int{-1},
     }
@@ -54,20 +54,20 @@ func TestDiags3x3Hard(t *testing.T) {
     s.Board[2][1] = 7
     s.Board[2][2] = 8
     diags := GetDiags(s)
-    if len(diags) != 12 {
+    if len(diags) != 10 {
         t.Fail()
     }
     expect := [][]int{
         []int{6},
         []int{3, 7},
         []int{0, 4, 8},
-        []int{0, 4, 8},
+        //[]int{0, 4, 8},
         []int{1, 5},
         []int{2},
         []int{8},
         []int{5, 7},
         []int{2, 4, 6},
-        []int{2, 4, 6},
+        //[]int{2, 4, 6},
         []int{1, 3},
         []int{0},
     }
@@ -86,19 +86,19 @@ func TestDiags3x3Hard(t *testing.T) {
 func TestDiags2x3(t *testing.T) {
     s := InitState(2, 3, 2, 3)
     diags := GetDiags(s)
-    if len(diags) != 10 {
+    if len(diags) != 8 {
         t.Fail()
     }
     expect := [][]int{
         []int{-1},
         []int{-1, -1},
         []int{-1, -1},
-        []int{-1, -1},
+        //[]int{-1, -1},
         []int{-1},
         []int{-1},
         []int{-1, -1},
         []int{-1, -1},
-        []int{-1, -1},
+        //[]int{-1, -1},
         []int{-1},
     }
     for i := 0; i < len(expect); i++ {
@@ -117,18 +117,18 @@ func TestDiags2x3Hard(t *testing.T) {
     s.Board[1][1] = 4
     s.Board[1][2] = 5
     diags := GetDiags(s)
-    if len(diags) != 10 {
+    if len(diags) != 8 {
         t.Fail()
     }
     expect := [][]int{
         []int{3},
         []int{0, 4},
-        []int{0, 4},
+        //[]int{0, 4},
         []int{1, 5},
         []int{2},
         []int{5},
         []int{2, 4},
-        []int{2, 4},
+        //[]int{2, 4},
         []int{1, 3},
         []int{0},
     }
@@ -153,19 +153,19 @@ func TestDiags3x2Hard(t *testing.T) {
     s.Board[2][0] = 4
     s.Board[2][1] = 5
     diags := GetDiags(s)
-    if len(diags) != 10 {
+    if len(diags) != 8 {
         t.Fail()
     }
     expect := [][]int{
         []int{4},
         []int{2, 5},
         []int{0, 3},
-        []int{0, 3},
+        //[]int{0, 3},
         []int{1},
         []int{5},
         []int{3, 4},
         []int{1, 2},
-        []int{1, 2},
+        //[]int{1, 2},
         []int{0},
     }
     for i := 0; i < len(expect); i++ {
@@ -396,7 +396,7 @@ func TestGetLineBonus(t *testing.T) {
     lines = [][]int{
         []int{-1,0,-1},
     }
-    if b := GetLineBonus(s, lines, 0); b > 0 {
+    if b := GetLineBonus(s, lines, 0); b == 0 {
         t.Errorf("%v", b)
     }
 }

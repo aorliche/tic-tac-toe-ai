@@ -24,18 +24,22 @@
             <label for="nplayers">Players: </label>
             <input type="number" id="nplayers" value="2" min="2" max="10">
             <hr>
-            <input type="checkbox" id="human" name="human" value="human" checked>
+            <input type="checkbox" id="human" name="human" value="human">
             <label for ="human">Human Player</label><br>
             <label for="player">Human: </label>
             <input type="number" id="player" value="1" min="1" max="10"><br>
             <button id="start">Start</button>   
             <hr>
             <label for="depth">Depth: </label>
-            <input type="number" id="depth" value="5" min="1" max="10"><br>
+            <input type="number" id="depth" value="8" min="1" max="10"><br>
             <label for="time">Time: </label>
             <input type="range" id="time" value="1000" min="500" max="10000" step="500">
             <span id="time-value">1000 ms</span><br>
+            <label for="ntop"># Top Choices: </label>
+            <input type="range" id="ntop" value="10" min="5" max="20" step="1">
+            <span id="ntop-value">10</span><br>
         </div>
     </div>
+    <p id='footer'>&#169; 2023 Anton Orlichenko<br></p>
 </body>
 </html>

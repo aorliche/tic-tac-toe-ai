@@ -44,7 +44,7 @@ class Board {
         return this.canvas.getContext("2d");
     }
 
-    newGame(rows, cols, thresh, nplayers, human, depth, time) {
+    newGame(rows, cols, thresh, nplayers, human, depth, time, ntop) {
         this.conn = new WebSocket(`ws://${location.host}/ws`);
         this.nplayers = nplayers;
         this.thresh = thresh;
@@ -60,7 +60,7 @@ class Board {
         this.cols = cols;
         this.conn.onopen = e => {
             const game = JSON.stringify({Key: -1, Human: human, State: {Rows: rows, Cols: cols, Board: this.board, NPlayers: nplayers, WinThresh: thresh, Turn: 0}});
-            const req = JSON.stringify({Key: -1, Action: "New", Payload: game, Depth: depth, TimeMillis: time});
+            const req = JSON.stringify({Key: -1, Action: "New", Payload: game, Depth: depth, TimeMillis: time, NTop: ntop});
             this.conn.send(req);
         }
         this.conn.onmessage = e => {
@@ -115,7 +115,8 @@ window.onload = () => {
         const player = $('#human').checked ? parseInt($('#player').value)-1 : -1;
         const depth = parseInt($('#depth').value);
         const time = parseInt($('#time').value);
-        board.newGame(rows, cols, thresh, nplayers, player, depth, time);
+        const ntop = parseInt($('#ntop').value);
+        board.newGame(rows, cols, thresh, nplayers, player, depth, time, ntop);
         //board.repaint();
     });
     function updateThresh() {
@@ -151,5 +152,8 @@ window.onload = () => {
     });
     $('#time').addEventListener("input", e => {
         $('#time-value').innerText = $('#time').value + " ms";
+    });
+    $('#ntop').addEventListener("input", e => {
+        $('#ntop-value').innerText = $('#ntop').value;
     });
 }

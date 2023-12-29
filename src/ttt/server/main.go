@@ -28,6 +28,7 @@ type Request struct {
     Payload string
     Depth int
     TimeMillis int
+    NTop int
 }
 
 var games = make(map[int]*Game)
@@ -146,7 +147,7 @@ func Socket(w http.ResponseWriter, r *http.Request) {
                 for i := 0; i<game.State.NPlayers; i++ {
                     if game.Human == -1 || i != game.Human {
                         game.sendChans[i] = make(chan *ttt.State)
-                        go ttt.Loop(i, game.sendChans[i], game.recvChan, req.Depth, req.TimeMillis)
+                        go ttt.Loop(i, game.sendChans[i], game.recvChan, req.Depth, req.TimeMillis, req.NTop)
                     }
                 }
                 go GameLoop(game, conn)

@@ -2,23 +2,19 @@ package ttt
 
 import (
     //"fmt"
+    "sort"
     "time"
 )
 
-func Loop(me int, inChan chan *State, outChan chan *State, depth int, timeMillis int) {
+func Loop(me int, inChan chan *State, outChan chan *State, depth int, timeMillis int, nTop int) {
     var state *State
     for { 
         state = <- inChan 
         // nil state indicates player disconnect
-        if state == nil {
+        if state == nil || GameOver(state) {
             break
         }
-        if GameOver(state) {
-            break
-        }
-        //fmt.Println(me, "recvd:", state)
-        next := Search(state, me, depth, timeMillis)
-        //fmt.Println(me, "after search state:", state)
+        next := Search(state, me, depth, timeMillis, nTop)
         if next == nil {
             time.Sleep(100 * time.Millisecond)
             continue
@@ -28,20 +24,23 @@ func Loop(me int, inChan chan *State, outChan chan *State, depth int, timeMillis
 }
 
 // Set up iterative deepening
-func Search(state *State, me int, depth int, timeMillis int) *State {
+func Search(state *State, me int, depth int, timeMillis int, nTop int) *State {
     startTime := time.Now()
     var res, resNonZero *State
     for d := 1; d < depth; d++ {
-        st, fn, fin := SearchDeep(state, me, d, startTime, timeMillis)
+        st, fn, fin := SearchDeep(state, me, d, startTime, timeMillis, nTop)
         /*if st != nil {
             if d == 1 {
                 fmt.Println("state", state)
             }
             fmt.Println("me", me, "d", d, "see", st, "val", Eval(st, me))
         }*/
+        if st != nil && Eval(st, me) == 10 {
+            return fn()
+        }
         if fn != nil && fin {
             res = fn()
-            if Eval(res, me) == 1 {
+            if Eval(res, me) == 10 {
                 return res
             }
             if Eval(st, me) == 0 {
@@ -63,7 +62,7 @@ func Search(state *State, me int, depth int, timeMillis int) *State {
 // Standard minimax without alpha-beta pruning
 // Allow players to make consecutive moves
 // If the game rules allow it
-func SearchDeep(state *State, me int, d int, startTime time.Time, timeMillis int) (*State, func()*State, bool) {
+func SearchDeep(state *State, me int, d int, startTime time.Time, timeMillis int, nTop int) (*State, func()*State, bool) {
     if d == 0 {
         return state, nil, true
     }
@@ -76,10 +75,22 @@ func SearchDeep(state *State, me int, d int, startTime time.Time, timeMillis int
     }
     vals := make([]float64, len(fns))
     states := make([]*State, len(fns))
+    // Sort fns by heuristic eval
+    fnVals := make([]float64, len(fns))
+    for i,fn := range fns {
+        fnVals[i] = Eval(fn(), me)
+    }
+    sort.Slice(fns, func(i, j int) bool {
+        return fnVals[i] > fnVals[j]
+    })
     // Special for consecutive moves
     /*valsCons := make([]float64, len(fns))
     statesCons := make([]*State, len(fns))*/
     for i,fn := range fns {
+        // Just evaluate the top N heuristic choices
+        if i >= nTop {
+            break
+        }
         next := fn()
         if !GameOver(next) {
             // Check opponents responses 
@@ -89,7 +100,7 @@ func SearchDeep(state *State, me int, d int, startTime time.Time, timeMillis int
             vals2 := make([]float64, state.NPlayers)
             states2 := make([]*State, state.NPlayers)
             for j := 0; j < state.NPlayers; j++ {
-                n, _, fin := SearchDeep(next, j, d-1, startTime, timeMillis)
+                n, _, fin := SearchDeep(next, j, d-1, startTime, timeMillis, nTop)
                 if fin {
                     if n != nil {
                         /*if j == me {
